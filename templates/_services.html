@@ -1,0 +1,5 @@
+<div class="grid g3">
+  {% for s in services %}
+  <div><p class="mono">0{{ forloop.counter }}</p><h3>{{ s.name }}</h3><p>{{ s.text }}</p><p class="price mono">{{ s.price }}</p></div>
+  {% endfor %}
+</div>

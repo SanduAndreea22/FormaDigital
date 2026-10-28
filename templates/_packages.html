@@ -1,0 +1,10 @@
+<div class="grid g3">
+  {% for p in packages %}
+  <div>
+    <h3>{{ p.name }}</h3>
+    <p class="big">{{ p.price }}</p><p class="price mono">RON / month</p>
+    <ul class="f">{% for f in p.features %}<li>{{ f }}</li>{% endfor %}</ul>
+    <a class="btn{% if p.featured %} primary{% endif %}" href="{% url 'contact' %}#brief">Choose {{ p.name }}</a>
+  </div>
+  {% endfor %}
+</div>

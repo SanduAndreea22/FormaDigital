@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="hero">
+  <p class="mono">Digital marketing · SEO / Ads / Social media</p>
+  <h1>New clients, in <em>numbers</em> you can verify.</h1>
+  <p class="lead">We build visibility for businesses that want to sell more. Fixed-price packages, no billable hours and no surprises at the end of the month.</p>
+  {% include '_cta.html' %}
+</header>
+<section id="services"><p class="mono">Services</p><h2>Three things, <em>done well</em>.</h2>{% include '_services.html' %}</section>
+<section id="packages"><p class="mono">Fixed-price packages</p><h2>Know what you pay <em>before</em> we start.</h2>
+  <p class="lead">Prices are monthly, with no setup fee. You can switch between packages at any time.</p>{% include '_packages.html' %}</section>
+<section id="portfolio"><p class="mono">Portfolio</p><h2>What changed <em>after</em> the first month.</h2>{% include '_cases.html' %}</section>
+<section id="process"><p class="mono">How we work</p><h2>Four steps, <em>no</em> fog.</h2>
+  <ol class="grid g4 steps">{% for t, d in process %}<li><span class="mono">Step {{ forloop.counter }}</span><h3>{{ t }}</h3><p>{{ d }}</p></li>{% endfor %}</ol></section>
+<section id="brief"><p class="mono">Brief</p><h2>Tell us about <em>your business</em>.</h2>
+  <p class="lead">We reply within 24 working hours with a package proposal and a starter plan.</p>
+  {% include '_brief_form.html' %}
+  <p style="margin-top:24px"><a class="btn" href="{% url 'contact' %}#book">Book a 30-minute consultation</a></p></section>
+{% endblock %}

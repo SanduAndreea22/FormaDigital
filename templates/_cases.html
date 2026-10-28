@@ -1,0 +1,11 @@
+<div class="grid g2">
+  {% for c in cases %}
+  <div>
+    <span class="demo mono">Demo — illustrative figures</span>
+    <p class="big">{{ c.big }}</p>
+    <h3>{{ c.title }}</h3><p>{{ c.text }}</p>
+    <ul class="stats">{% for n, l in c.stats %}<li><strong class="accent">{{ n }}</strong> <span class="mono">{{ l }}</span></li>{% endfor %}</ul>
+  </div>
+  {% endfor %}
+</div>
+<p class="mono note">All figures above are illustrative, for demo purposes. They do not represent real clients.</p>

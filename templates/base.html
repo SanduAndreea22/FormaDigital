@@ -1,0 +1,32 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Forma Digital — SEO, ads and social media with fixed prices{% endblock %}</title>
+  <meta name="description" content="Marketing digital with fixed-price packages. Demo agency, part of the Andreea Tech portfolio.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand mono" href="{% url 'home' %}">Forma Digital</a>
+      <ul class="mono">
+        <li><a href="{% url 'services' %}">Services</a></li>
+        <li><a href="{% url 'home' %}#packages">Packages</a></li>
+        <li><a href="{% url 'portfolio' %}">Portfolio</a></li>
+        <li><a href="{% url 'contact' %}">Contact</a></li>
+      </ul>
+    </nav>
+    {% if messages %}{% for m in messages %}<p class="flash mono" role="status">{{ m }}</p>{% endfor %}{% endif %}
+    {% block content %}{% endblock %}
+    <footer class="mono">
+      <span>Forma Digital — fictional demo agency. Part of the Andreea Tech portfolio.</span>
+      <a href="{% url 'contact' %}#book">Book a consultation</a>
+    </footer>
+  </div>
+</body>
+</html>
