@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forma Digital — mock</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F4F1EA;--ink:#111111;--accent:#B5462E}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font:16px/1.55 'IBM Plex Sans',sans-serif}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+h1,h2,h3{font-family:'Instrument Serif',serif;font-weight:400;line-height:1}
+h1{font-size:clamp(48px,9vw,120px);letter-spacing:-.02em}
+h2{font-size:clamp(36px,6vw,72px)}
+h3{font-size:30px}
+em{font-style:italic}
+.screen{border-bottom:3px solid var(--ink)}
+.label{padding:6px 16px;background:var(--ink);color:var(--paper)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--ink)}
+nav ul{display:flex;gap:20px;list-style:none;padding:0;flex-wrap:wrap}
+a{color:inherit}
+.btn{display:inline-block;padding:14px 20px;border:1px solid var(--ink);text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.hero{padding:64px 0 48px}
+.hero p{max-width:560px;margin:24px 0 32px;font-size:18px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.grid{display:grid;border-top:1px solid var(--ink);border-left:1px solid var(--ink)}
+.grid>*{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:24px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.price{font-family:'IBM Plex Mono',monospace;font-size:14px;margin-top:16px}
+.big{font-family:'Instrument Serif',serif;font-size:64px;line-height:1;color:var(--accent)}
+section{padding:48px 0}
+ul.f{padding-left:18px;margin:16px 0 24px}
+.demo{display:inline-block;border:1px solid var(--accent);color:var(--accent);padding:2px 8px;margin-bottom:12px}
+form{display:grid;gap:0;border-top:1px solid var(--ink);border-left:1px solid var(--ink);max-width:640px}
+form label{display:block;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:10px 14px}
+form span{display:block}
+form input,form select,form textarea{width:100%;border:0;background:transparent;font:inherit;padding:4px 0;outline:0}
+.slots{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.slot{border:1px solid var(--ink);padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:13px}
+.slot.on{background:var(--ink);color:var(--paper)}
+footer{padding:24px 0}
+</style>
+</head>
+<body>
+
+<!-- ECRAN 1: ACASĂ -->
+<div class="screen">
+<div class="label mono">Ecran 1 — Acasă</div>
+<div class="wrap">
+<nav><strong class="mono">Forma Digital</strong>
+<ul class="mono"><li><a href="#">Servicii</a></li><li><a href="#">Pachete</a></li><li><a href="#">Portofoliu</a></li><li><a href="#">Contact</a></li></ul></nav>
+<div class="hero">
+<p class="mono">Marketing digital · SEO / Reclame / Social media</p>
+<h1>Clienți noi, în <em>cifre</em> pe care le poți verifica.</h1>
+<p>Construim vizibilitate pentru afaceri care vor să vândă mai mult. Lucrăm cu pachete cu preț fix, fără ore facturate și fără surprize la final de lună.</p>
+<div class="ctas"><a class="btn primary" href="#">Cere o ofertă</a><a class="btn" href="#">Programează o consultație</a><a class="btn" href="#">Vezi portofoliul</a></div>
+</div>
+<div class="grid g3" style="margin-bottom:48px">
+<div><p class="mono">01</p><h3>SEO</h3><p>Pagini care apar în Google pentru căutările clienților tăi. Audit tehnic, conținut și linkuri.</p><p class="price">din 2.900 RON / lună</p></div>
+<div><p class="mono">02</p><h3>Reclame plătite</h3><p>Campanii Google și Meta cu buget controlat, urmărite zilnic.</p><p class="price">din 3.500 RON / lună</p></div>
+<div><p class="mono">03</p><h3>Social media</h3><p>Calendar de postări, design și raport lunar. Conținut care susține vânzarea.</p><p class="price">din 2.400 RON / lună</p></div>
+</div>
+</div>
+</div>
+
+<!-- ECRAN 2: PACHETE -->
+<div class="screen">
+<div class="label mono">Ecran 2 — Servicii & pachete</div>
+<div class="wrap"><section>
+<p class="mono">Pachete cu preț fix</p>
+<h2>Știi ce plătești <em>înainte</em> să înceapă.</h2>
+<p style="margin:16px 0 32px">Prețurile sunt pe lună, fără taxă de setup. Poți trece de la un pachet la altul oricând.</p>
+<div class="grid g3">
+<div><h3>Start</h3><p class="big">2.900</p><p class="price">RON / lună</p>
+<ul class="f"><li>SEO on-page pentru 5 pagini</li><li>Raport lunar cu poziții</li><li>1 consultație strategică pe lună</li></ul><a class="btn" href="#">Alege Start</a></div>
+<div><h3>Creștere</h3><p class="big">5.400</p><p class="price">RON / lună</p>
+<ul class="f"><li>SEO complet cu linkuri și conținut</li><li>Campanii Google sau Meta</li><li>12 postări social media / lună</li><li>Raport săptămânal</li></ul><a class="btn primary" href="#">Alege Creștere</a></div>
+<div><h3>Dominare</h3><p class="big">9.800</p><p class="price">RON / lună</p>
+<ul class="f"><li>Tot ce ai în Creștere</li><li>Campanii multi-canal</li><li>20 postări / lună</li><li>Strategie trimestrială cu echipa ta</li></ul><a class="btn" href="#">Alege Dominare</a></div>
+</div>
+</section></div>
+</div>
+
+<!-- ECRAN 3: PORTOFOLIU -->
+<div class="screen">
+<div class="label mono">Ecran 3 — Portofoliu</div>
+<div class="wrap"><section>
+<p class="mono">Portofoliu</p>
+<h2>Ce s-a schimbat <em>după</em> prima lună.</h2>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-top:32px">
+<div><span class="demo mono">Demo — cifre ilustrative</span><p class="big">+184%</p><h3>Clinică dentară demo</h3><p>Cereri de programare. Campanie locală, 6 luni.</p>
+<p class="price">3,1x return · 64 pagini indexate · −22% cost/programare</p></div>
+<div><span class="demo mono">Demo — cifre ilustrative</span><p class="big">×2,4</p><h3>Magazin demo</h3><p>Vânzări online. SEO și reclame, 9 luni.</p>
+<p class="price">2,4x trafic organic · 41 categorii · +37% venituri</p></div>
+</div>
+<p class="mono" style="margin-top:16px">Toate cifrele sunt ilustrative, pentru demo. Nu reprezintă clienți reali.</p>
+</section></div>
+</div>
+
+<!-- ECRAN 4: CONTACT -->
+<div class="screen">
+<div class="label mono">Ecran 4 — Contact (brief + programare)</div>
+<div class="wrap"><section>
+<p class="mono">Brief</p>
+<h2>Spune-ne despre <em>afacerea ta</em>.</h2>
+<p style="margin:16px 0 32px">Răspundem în 24 de ore lucrătoare cu o propunere de pachet și un plan de început.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px">
+<form>
+<label><span class="mono">Nume</span><input></label>
+<label><span class="mono">Firmă</span><input></label>
+<label><span class="mono">Email</span><input></label>
+<label><span class="mono">Site web</span><input></label>
+<label><span class="mono">Buget lunar</span><select><option>Alege</option></select></label>
+<label><span class="mono">Ce vrei să obții</span><textarea rows="3"></textarea></label>
+<label style="border-bottom:1px solid var(--ink)"><a class="btn primary" href="#">Trimite brief-ul</a></label>
+</form>
+<div>
+<p class="mono">Programează o consultație de 30 de minute</p>
+<p class="mono" style="margin-top:16px">Joi, 5 noiembrie</p>
+<div class="slots"><span class="slot">10:00</span><span class="slot on">10:30</span><span class="slot">11:00</span><span class="slot">14:00</span><span class="slot">15:30</span></div>
+<a class="btn primary" href="#">Confirmă intervalul</a>
+</div></div>
+</section>
+<footer class="mono">Forma Digital — agenție demo fictivă. Parte din portofoliul Andreea Tech.</footer>
+</div>
+</div>
+
+</body>
+</html>
