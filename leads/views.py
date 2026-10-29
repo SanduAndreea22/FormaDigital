@@ -1,5 +1,6 @@
 import logging
 import re
+import threading
 from datetime import timedelta
 
 from django.conf import settings
@@ -22,14 +23,22 @@ DUPLICATE_WINDOW = timedelta(minutes=5)
 BRIEF_SUCCESS = 'Brief received. We reply within 24 working hours with a package proposal and a starter plan.'
 
 
-def _notify_team(subject, body):
-    # Header values may never contain line breaks, whatever the visitor typed.
-    subject = re.sub(r'[\x00-\x1f\x7f]+', ' ', subject)
+def _send_team_mail(subject, body):
     try:
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [settings.TEAM_EMAIL])
     except Exception:
         # The lead is already saved; a mail failure must not turn into an error page for the visitor.
         logger.exception('Could not email the team: %s', subject)
+
+
+def _notify_team(subject, body):
+    # Header values may never contain line breaks, whatever the visitor typed.
+    subject = re.sub(r'[\x00-\x1f\x7f]+', ' ', subject)
+    if settings.NOTIFY_IN_BACKGROUND:
+        # Non-daemon: the process waits for it at shutdown, so a deploy does not drop a mail in flight.
+        threading.Thread(target=_send_team_mail, args=(subject, body)).start()
+    else:
+        _send_team_mail(subject, body)
 
 
 def _booked_message(start):

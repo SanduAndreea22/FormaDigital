@@ -14,10 +14,10 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .models import Brief, Consultation
-from .slots import available_slots
+from .slots import _slots_for, all_slots, available_slots
 
 
-@override_settings(SECURE_SSL_REDIRECT=False)
+@override_settings(SECURE_SSL_REDIRECT=False, NOTIFY_IN_BACKGROUND=False)
 class BaseTestCase(TestCase):
     def setUp(self):
         cache.clear()  # rate-limit counters live in the cache
@@ -38,6 +38,19 @@ class PagesTests(BaseTestCase):
     def test_double_submit_guard_script_is_served(self):
         html = self.client.get(reverse('home')).content.decode()
         self.assertIn('js/forms.js', html)
+
+    def test_favicon_is_declared_so_browsers_skip_the_404(self):
+        self.assertIn('rel="icon"', self.client.get(reverse('home')).content.decode())
+
+    def test_every_font_file_referenced_by_css_exists(self):
+        import re
+        from pathlib import Path
+
+        css = (settings.BASE_DIR / 'static/css/fonts.css').read_text()
+        referenced = re.findall(r"url\('\.\./fonts/([^']+)'\)", css)
+        self.assertTrue(referenced)
+        for name in referenced:
+            self.assertTrue(Path(settings.BASE_DIR / 'static/fonts' / name).is_file(), name)
 
     def test_no_third_party_assets(self):
         html = self.client.get(reverse('home')).content.decode()
@@ -172,6 +185,44 @@ class BookingTests(BaseTestCase):
         for _ in range(10):
             self.post(slot, email='bad')
         self.assertEqual(self.post(slot).status_code, 429)
+
+
+class SlotGridTests(TestCase):
+    def test_grid_is_cached_per_day_and_unchanged(self):
+        _slots_for.cache_clear()
+        first = all_slots()
+        hits_before = _slots_for.cache_info().hits
+        second = all_slots()
+        self.assertEqual(first, second)
+        self.assertEqual(_slots_for.cache_info().hits, hits_before + 1)
+
+    def test_grid_shape(self):
+        slots = all_slots()
+        self.assertTrue(all(timezone.localtime(s).weekday() < 5 for s in slots))
+        self.assertTrue(all(timezone.localtime(s).minute in (0, 30) for s in slots))
+        self.assertGreater(slots[0], timezone.now())
+
+    def test_returned_list_is_a_copy(self):
+        all_slots().clear()
+        self.assertTrue(all_slots())
+
+
+@override_settings(NOTIFY_IN_BACKGROUND=True)
+class BackgroundNotifyTests(TestCase):
+    def test_mail_is_sent_from_a_thread_and_the_request_still_succeeds(self):
+        import threading
+
+        before = threading.active_count()
+        with override_settings(SECURE_SSL_REDIRECT=False):
+            response = self.client.post(reverse('submit_brief'), {
+                'name': 'Ana', 'company': 'Acme', 'email': 'ana@acme.ro', 'website': '',
+                'budget': '3to6', 'goals': 'More leads', 'leave_empty': ''})
+        for t in threading.enumerate():
+            if t is not threading.main_thread():
+                t.join(timeout=5)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertGreaterEqual(before, 1)
 
 
 class DatabaseConstraintTests(TestCase):

@@ -154,9 +154,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+# Production: hashed file names + far-future caching (needs `collectstatic` at build time).
 STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'
+        if DEBUG
+        else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    },
 }
 
 # Console backend only in development: in production, mail (and the personal data in it) must go
@@ -172,6 +177,9 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Forma Digital <no-reply@formadigital.demo>')
+
+# Send notification emails from a background thread so a slow SMTP server never holds up the visitor.
+NOTIFY_IN_BACKGROUND = os.environ.get('NOTIFY_IN_BACKGROUND', '1') == '1'
 
 TEAM_EMAIL = os.environ.get('TEAM_EMAIL', '')
 if not TEAM_EMAIL:

@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from functools import lru_cache
 
 from django.utils import timezone
 
@@ -14,12 +15,11 @@ def _aware(dt):
     return timezone.make_aware(dt, timezone.get_current_timezone())
 
 
-def all_slots(now=None):
-    """Every bookable 30-minute start on working days in the next two weeks."""
-    now = now or timezone.localtime()
+@lru_cache(maxsize=4)
+def _slots_for(today):
     slots = []
     for offset in range(1, DAYS_AHEAD + 1):
-        day = (now + timedelta(days=offset)).date()
+        day = today + timedelta(days=offset)
         if day.weekday() >= 5:
             continue
         current = datetime.combine(day, FIRST_SLOT)
@@ -27,7 +27,14 @@ def all_slots(now=None):
         while current <= end:
             slots.append(_aware(current))
             current += timedelta(minutes=SLOT_MINUTES)
-    return slots
+    return tuple(slots)
+
+
+def all_slots(now=None):
+    """Every bookable 30-minute start on working days in the next two weeks.
+    The grid only changes with the calendar day, so it is computed once per day."""
+    now = now or timezone.localtime()
+    return list(_slots_for(timezone.localtime(now).date()))
 
 
 def available_slots():

@@ -23,6 +23,7 @@ class Brief(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [models.Index(fields=['handled', '-created_at'], name='brief_handled_created_idx')]
 
     def __str__(self):
         return f'{self.company} — {self.name}'
@@ -48,6 +49,7 @@ class Consultation(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['start'], condition=Q(status='confirmed'), name='unique_confirmed_start'),
         ]
+        indexes = [models.Index(fields=['email', 'status'], name='consult_email_status_idx')]
 
     def clean(self):
         """Admin entries must sit on the same grid the public booking page offers."""
