@@ -6,7 +6,9 @@ from datetime import datetime
 from django.conf import settings
 from django.core import mail
 from django.core.cache import cache
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -32,6 +34,10 @@ class PagesTests(BaseTestCase):
         self.assertIn("default-src 'self'", csp)
         self.assertIn("frame-ancestors 'none'", csp)
         self.assertIn('Permissions-Policy', response.headers)
+
+    def test_double_submit_guard_script_is_served(self):
+        html = self.client.get(reverse('home')).content.decode()
+        self.assertIn('js/forms.js', html)
 
     def test_no_third_party_assets(self):
         html = self.client.get(reverse('home')).content.decode()
@@ -73,9 +79,21 @@ class BriefTests(BaseTestCase):
                 self.assertRedirects(self.post(), reverse('contact'))
         self.assertEqual(Brief.objects.count(), 1)
 
+    def test_double_submit_creates_one_lead_and_still_succeeds(self):
+        self.assertEqual(self.post().status_code, 302)
+        response = self.post(name='Ana (again)')
+        self.assertRedirects(response, reverse('contact'))
+        self.assertEqual(Brief.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_same_email_different_goals_is_a_new_brief(self):
+        self.post()
+        self.post(goals='A different project')
+        self.assertEqual(Brief.objects.count(), 2)
+
     def test_rate_limit(self):
         for i in range(5):
-            self.assertEqual(self.post(company=f'Co{i}').status_code, 302)
+            self.assertEqual(self.post(company=f'Co{i}', goals=f'Goal {i}').status_code, 302)
         self.assertEqual(self.post(company='Co6').status_code, 429)
         self.assertEqual(Brief.objects.count(), 5)
 
@@ -98,6 +116,29 @@ class BookingTests(BaseTestCase):
         slot = available_slots()[0]
         self.assertRedirects(self.post(slot), reverse('contact'))
         self.assertNotIn(slot, available_slots())
+
+    def test_double_click_by_same_visitor_is_success_not_error(self):
+        slot = available_slots()[0]
+        self.post(slot)
+        response = self.post(slot)
+        self.assertRedirects(response, reverse('contact'))
+        self.assertEqual(Consultation.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_cancelled_slot_can_be_booked_again(self):
+        slot = available_slots()[0]
+        self.post(slot)
+        Consultation.objects.update(status=Consultation.Status.CANCELLED)
+        self.assertIn(slot, available_slots())
+        self.assertEqual(self.post(slot, 'other@x.ro').status_code, 302)
+        self.assertEqual(Consultation.objects.count(), 2)
+
+    def test_cancelled_consultations_do_not_count_toward_the_email_cap(self):
+        slots = available_slots()
+        for slot in slots[:2]:
+            self.post(slot)
+        Consultation.objects.update(status=Consultation.Status.CANCELLED)
+        self.assertEqual(self.post(slots[2]).status_code, 302)
 
     def test_double_booking_blocked(self):
         slot = available_slots()[0]
@@ -133,6 +174,54 @@ class BookingTests(BaseTestCase):
         self.assertEqual(self.post(slot).status_code, 429)
 
 
+class DatabaseConstraintTests(TestCase):
+    """The view checks are a convenience; the database is what actually prevents double booking."""
+
+    def make(self, start, status='confirmed'):
+        return Consultation.objects.create(start=start, name='A', email='a@b.ro', status=status)
+
+    def test_two_confirmed_on_same_start_rejected_by_db(self):
+        start = available_slots()[0]
+        self.make(start)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            self.make(start)
+
+    def test_cancelled_does_not_block_a_new_confirmed(self):
+        start = available_slots()[0]
+        self.make(start, status='cancelled')
+        self.make(start)
+        self.assertEqual(Consultation.objects.filter(start=start).count(), 2)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class AdminTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_superuser('boss', 'boss@x.ro', 'pw-12345-long')
+        self.client.force_login(user)
+
+    def test_cancel_action_frees_slot_and_keeps_record(self):
+        start = available_slots()[0]
+        c = Consultation.objects.create(start=start, name='A', email='a@b.ro')
+        self.client.post(reverse('admin:leads_consultation_changelist'),
+                         {'action': 'cancel', '_selected_action': [c.pk]})
+        c.refresh_from_db()
+        self.assertEqual(c.status, 'cancelled')
+        self.assertIn(start, available_slots())
+
+    def test_handled_at_is_stamped_and_cleared(self):
+        brief = Brief.objects.create(name='A', company='C', email='a@b.ro', budget='lt3', goals='g')
+        url = reverse('admin:leads_brief_change', args=[brief.pk])
+        data = {'name': 'A', 'company': 'C', 'email': 'a@b.ro', 'website': '', 'budget': 'lt3', 'goals': 'g', 'handled': 'on'}
+        self.client.post(url, data)
+        brief.refresh_from_db()
+        self.assertTrue(brief.handled)
+        self.assertIsNotNone(brief.handled_at)
+        data.pop('handled')
+        self.client.post(url, data)
+        brief.refresh_from_db()
+        self.assertIsNone(brief.handled_at)
+
+
 class AdminGridTests(TestCase):
     def local(self, *args):
         return timezone.make_aware(datetime(*args))
@@ -154,8 +243,8 @@ class SettingsGuardTests(TestCase):
     """Production must refuse to boot with missing secrets instead of falling back to unsafe defaults."""
 
     def boot(self, **env):
-        base = {k: v for k, v in os.environ.items() if k not in ('SECRET_KEY', 'TEAM_EMAIL', 'DEBUG')}
-        base.update({'DJANGO_SETTINGS_MODULE': 'config.settings', 'DEBUG': '0', **env})
+        base = {k: v for k, v in os.environ.items() if k not in ('SECRET_KEY', 'TEAM_EMAIL', 'DEBUG', 'DATABASE_URL')}
+        base.update({'DJANGO_SETTINGS_MODULE': 'config.settings', 'DEBUG': '0', 'DATABASE_URL': 'sqlite:///:memory:', **env})
         return subprocess.run(
             [sys.executable, '-c', 'import django; django.setup()'],
             env=base, cwd=settings.BASE_DIR, capture_output=True, text=True)
@@ -169,6 +258,11 @@ class SettingsGuardTests(TestCase):
         result = self.boot(SECRET_KEY='x' * 60)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('TEAM_EMAIL', result.stderr)
+
+    def test_missing_database_url_refuses_to_boot(self):
+        result = self.boot(SECRET_KEY='x' * 60, TEAM_EMAIL='t@x.ro', DATABASE_URL='')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('DATABASE_URL', result.stderr)
 
     def test_complete_env_boots(self):
         self.assertEqual(self.boot(SECRET_KEY='x' * 60, TEAM_EMAIL='t@x.ro').returncode, 0)

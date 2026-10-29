@@ -95,6 +95,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 _database_url = os.environ.get('DATABASE_URL', '')
+if not _database_url and not DEBUG:
+    # The SQLite fallback is a file on an ephemeral disk: leads would vanish on every deploy.
+    raise ImproperlyConfigured('DATABASE_URL must be set when DEBUG is off.')
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",

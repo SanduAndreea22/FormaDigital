@@ -34,7 +34,9 @@ def available_slots():
     slots = all_slots()
     if not slots:
         return []
-    taken = set(Consultation.objects.filter(start__in=slots).values_list('start', flat=True))
+    taken = set(
+        Consultation.objects.filter(start__in=slots, status=Consultation.Status.CONFIRMED).values_list('start', flat=True)
+    )
     return [s for s in slots if s not in taken]
 
 

@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -17,6 +18,7 @@ class Brief(models.Model):
     budget = models.CharField(max_length=8, choices=Budget.choices)
     goals = models.TextField(max_length=2000)
     handled = models.BooleanField(default=False)
+    handled_at = models.DateTimeField(null=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -27,9 +29,15 @@ class Brief(models.Model):
 
 
 class Consultation(models.Model):
-    """A 30-minute call. The unique start time makes double booking impossible."""
+    """A 30-minute call. Only one confirmed consultation can hold a start time (enforced by the
+    database); cancelling keeps the record and frees the slot."""
 
-    start = models.DateTimeField(unique=True)
+    class Status(models.TextChoices):
+        CONFIRMED = 'confirmed', 'Confirmed'
+        CANCELLED = 'cancelled', 'Cancelled'
+
+    start = models.DateTimeField()
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.CONFIRMED)
     name = models.CharField(max_length=120)
     email = models.EmailField()
     notes = models.TextField(max_length=1000, blank=True)
@@ -37,6 +45,9 @@ class Consultation(models.Model):
 
     class Meta:
         ordering = ['start']
+        constraints = [
+            models.UniqueConstraint(fields=['start'], condition=Q(status='confirmed'), name='unique_confirmed_start'),
+        ]
 
     def clean(self):
         """Admin entries must sit on the same grid the public booking page offers."""
