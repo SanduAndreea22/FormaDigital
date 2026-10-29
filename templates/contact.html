@@ -17,7 +17,7 @@
     <label><span class="mono">Name</span><input name="name" required maxlength="120" value="{{ consult_form.name.value|default:'' }}">{% for e in consult_form.name.errors %}<em class="err">{{ e }}</em>{% endfor %}</label>
     <label><span class="mono">Email</span><input name="email" type="email" required value="{{ consult_form.email.value|default:'' }}">{% for e in consult_form.email.errors %}<em class="err">{{ e }}</em>{% endfor %}</label>
     <label><span class="mono">Notes (optional)</span><textarea name="notes" rows="3" maxlength="1000">{{ consult_form.notes.value|default:'' }}</textarea></label>
-    <div class="hp" aria-hidden="true"><input name="nickname" tabindex="-1" autocomplete="off"></div>
+    <div class="hp" aria-hidden="true"><input name="leave_empty" tabindex="-1" autocomplete="off"></div>
     <div class="submit"><button class="btn primary" type="submit">Confirm the slot</button></div>
   </form></section>
 {% endblock %}

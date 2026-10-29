@@ -2,7 +2,7 @@
   {% csrf_token %}
   {{ brief_form.non_field_errors }}
   {% for f in brief_form %}
-    {% if f.name == 'nickname' %}<div class="hp" aria-hidden="true">{{ f }}</div>
+    {% if f.name == 'leave_empty' %}<div class="hp" aria-hidden="true">{{ f }}</div>
     {% else %}
     <label><span class="mono">{{ f.label }}</span>{{ f }}{% for e in f.errors %}<em class="err">{{ e }}</em>{% endfor %}</label>
     {% endif %}

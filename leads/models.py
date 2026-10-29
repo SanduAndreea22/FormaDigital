@@ -1,4 +1,6 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 
 class Brief(models.Model):
@@ -35,6 +37,21 @@ class Consultation(models.Model):
 
     class Meta:
         ordering = ['start']
+
+    def clean(self):
+        """Admin entries must sit on the same grid the public booking page offers."""
+        from . import slots
+
+        if self.start is None:
+            return
+        local = timezone.localtime(self.start)
+        if (
+            local.weekday() >= 5
+            or local.minute % slots.SLOT_MINUTES
+            or local.second
+            or not (slots.FIRST_SLOT <= local.time() <= slots.LAST_SLOT)
+        ):
+            raise ValidationError({'start': 'Start must be a working-day slot on the grid (10:00–16:30, every 30 minutes).'})
 
     def __str__(self):
         return f'{self.start:%Y-%m-%d %H:%M} — {self.name}'

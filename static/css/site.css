@@ -46,3 +46,5 @@ ul.stats strong{font-family:'IBM Plex Mono',monospace;font-size:18px}
 .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
 .flash{border:1px solid var(--accent);color:var(--accent);padding:12px 16px;margin-top:16px}
 footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:24px 0;border-top:1px solid var(--ink);margin-top:24px}
+.after-form{margin-top:24px}
+.errorlist{list-style:none;padding:10px 14px;color:var(--accent);border-right:1px solid var(--ink);border-bottom:1px solid var(--ink)}
